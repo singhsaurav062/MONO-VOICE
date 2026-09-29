@@ -1,0 +1,84 @@
+(() => {
+  let selectedBlob = null;
+  let recorder = null;
+  let stream = null;
+  let chunks = [];
+  let seconds = 0;
+  let timer = null;
+  let linkCreated = false;
+  const $ = (id) => document.getElementById(id);
+  const toast = (message) => { const el = $('toast'); el.textContent = message; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 2600); };
+  const sizeLabel = (bytes) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  function setMessage(blob, label) {
+    selectedBlob = blob;
+    linkCreated = false;
+    $('file-name').textContent = `${label} · ${sizeLabel(blob.size)}`;
+    $('record-title').textContent = 'Your voice note is ready';
+    $('record-caption').textContent = 'Record again or create your private link.';
+    $('record-clock').textContent = '';
+    $('create-link').disabled = false;
+    $('link-result').hidden = true;
+  }
+  $('audio-file').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('audio/')) { toast('Please choose an audio file.'); event.target.value = ''; return; }
+    if (file.size > 15 * 1024 * 1024) { toast('That file is over 15 MB.'); event.target.value = ''; return; }
+    setMessage(file, file.name);
+  });
+  $('record-button').addEventListener('click', async () => {
+    if (recorder?.state === 'recording') { recorder.stop(); clearInterval(timer); $('record-button').classList.remove('recording'); $('record-title').textContent = 'Finishing your recording…'; return; }
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { toast('Recording is unavailable here. Choose an audio file instead.'); return; }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      chunks = [];
+      recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+        if (blob.size) setMessage(blob, 'Recorded voice note');
+      };
+      recorder.start();
+      seconds = 0;
+      $('create-link').disabled = true;
+      $('record-button').classList.add('recording');
+      $('record-title').textContent = 'Tap again when you’re done';
+      $('record-caption').textContent = 'Recording stays on this device.';
+      timer = setInterval(() => {
+        seconds += 1;
+        $('record-clock').textContent = `● ${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+        if (seconds >= 120 && recorder?.state === 'recording') $('record-button').click();
+      }, 1000);
+    } catch {
+      toast('Microphone access was blocked. Choose an audio file instead.');
+    }
+  });
+  $('create-link').addEventListener('click', async () => {
+    if (!selectedBlob || linkCreated) return;
+    const button = $('create-link');
+    button.disabled = true;
+    button.textContent = 'Saving your recording…';
+    try {
+      const id = crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
+      const expiryHours = Number($('expiry').value);
+      await HushStore.save(id, selectedBlob, Date.now() + expiryHours * 60 * 60 * 1000);
+      const url = new URL('listen.html', location.href);
+      url.hash = new URLSearchParams({ id }).toString();
+      $('share-link').value = url.href;
+      $('open-link').href = url.href;
+      $('link-result').hidden = false;
+      linkCreated = true;
+      $('link-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch {
+      toast('Could not save this note in the browser. Try another browser or audio file.');
+    } finally {
+      button.disabled = linkCreated || !selectedBlob;
+      button.innerHTML = linkCreated ? 'Link created' : 'Create a private link <svg viewBox="0 0 20 20" fill="none"><path d="M4 10h11m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    }
+  });
+  $('copy-link').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText($('share-link').value); toast('Link copied.'); }
+    catch { $('share-link').select(); document.execCommand('copy'); toast('Link copied.'); }
+  });
+})();
