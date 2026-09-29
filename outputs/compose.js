@@ -56,6 +56,10 @@
   });
   $('create-link').addEventListener('click', async () => {
     if (!selectedBlob || linkCreated) return;
+    if (location.protocol === 'file:') {
+      toast('Open this page through localhost or the live HTTPS site so both pages can access the recording.');
+      return;
+    }
     const button = $('create-link');
     button.disabled = true;
     button.textContent = 'Saving your recording…';

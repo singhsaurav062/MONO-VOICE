@@ -9,11 +9,16 @@
   let consumed = false;
   function showUnavailable() {
     $('recipient-icon').innerHTML = '<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
-    $('recipient-kicker').textContent = 'This note is no longer available';
-    $('recipient-title').innerHTML = 'This recording<br>has disappeared.';
-    $('recipient-description').textContent = 'It may have expired, already been played, or been created in a different browser.';
+    const openedFromFile = location.protocol === 'file:';
+    $('recipient-kicker').textContent = openedFromFile ? 'Local preview limitation' : 'This note is no longer available';
+    $('recipient-title').innerHTML = openedFromFile ? 'Open this demo<br>through a website.' : 'This recording<br>has disappeared.';
+    $('recipient-description').textContent = openedFromFile
+      ? 'Browsers isolate storage for local files. Use localhost or the live HTTPS site to test both pages together.'
+      : 'It may have expired, already been played, or been created in a different browser.';
     $('open-recording').hidden = true;
-    $('recipient-foot').innerHTML = 'One listen means one listen. This note can’t be opened again.';
+    $('recipient-foot').textContent = openedFromFile
+      ? 'Open index.html from a localhost or HTTPS address.'
+      : 'One listen means one listen. This note can’t be opened again.';
   }
   if (!noteId) showUnavailable();
   $('open-recording').addEventListener('click', () => { if (!consumed) modal.hidden = false; });
