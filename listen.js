@@ -2,6 +2,7 @@
   const $ = (id) => document.getElementById(id);
   const params = new URLSearchParams(location.hash.slice(1));
   const noteId = params.get('id');
+  const driveId = params.get('drive');
   const modal = $('warning-modal');
   const toast = (message) => { const el = $('toast'); el.textContent = message; el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 2600); };
   let audio = null;
@@ -20,11 +21,30 @@
       ? 'Open index.html from a localhost or HTTPS address.'
       : 'One listen means one listen. This note can’t be opened again.';
   }
-  if (!noteId || location.protocol === 'file:') showUnavailable();
+  if (driveId && /^[A-Za-z0-9_-]{10,}$/.test(driveId) && location.protocol !== 'file:') {
+    $('recipient-kicker').textContent = 'Shared from Google Drive';
+    $('recipient-description').textContent = 'Confirm below to open the audio player. The original file stays in Drive.';
+    $('recipient-foot').textContent = 'Anyone with the Drive link may listen again or download the file.';
+    document.querySelector('.recipient-shell .footer span:last-child').textContent = 'DRIVE LINK · REPLAYABLE';
+    $('warning-title').textContent = 'This recording stays on Drive.';
+    $('warning-copy').textContent = 'Hush cannot tell when playback ends, delete the Drive file, or prevent another listen. Anyone with access to the Drive link may replay it.';
+    $('confirm-listen').textContent = 'Show Google Drive player';
+  } else if (!noteId || location.protocol === 'file:') showUnavailable();
   $('open-recording').addEventListener('click', () => { if (!consumed) modal.hidden = false; });
   $('cancel-listen').addEventListener('click', () => { modal.hidden = true; $('open-recording').focus(); });
   modal.addEventListener('click', (event) => { if (event.target === modal) modal.hidden = true; });
   $('confirm-listen').addEventListener('click', async () => {
+    if (driveId && /^[A-Za-z0-9_-]{10,}$/.test(driveId) && location.protocol !== 'file:') {
+      modal.hidden = true;
+      $('recipient-kicker').textContent = 'Shared from Google Drive';
+      $('recipient-title').textContent = 'Your recording is ready.';
+      $('recipient-description').textContent = 'Use the player below to listen.';
+      $('open-recording').hidden = true;
+      $('drive-frame').src = `https://drive.google.com/file/d/${encodeURIComponent(driveId)}/preview`;
+      $('drive-open-link').href = `https://drive.google.com/file/d/${encodeURIComponent(driveId)}/view`;
+      $('drive-player').hidden = false;
+      return;
+    }
     if (consumed || !noteId) return;
     consumed = true;
     modal.hidden = true;

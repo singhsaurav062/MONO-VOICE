@@ -14,12 +14,12 @@
     <header class="nav">
       <a class="brand" href="index.html" aria-label="hush home"><span class="brand-mark"><svg viewBox="0 0 16 16" fill="none"><path d="M4 6.5v3M7 4.5v7M10 6v4M13 5v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>hush</a>
       <span class="nav-note">Messages that don’t linger.</span>
-      <span class="badge">Private by design</span>
+      <span class="badge">Choose your link type</span>
     </header>
     <main>
       <section class="intro">
         <div><p class="eyebrow">A little more personal</p><h1>Say it once.<br><em>Keep it private.</em></h1></div>
-        <p class="intro-copy">Send a voice message that disappears after one listen. No inbox. No replay. Just between you two.</p>
+        <p class="intro-copy">Create a one-time voice link with private storage, or share a Google Drive recording through a listener page.</p>
       </section>
       <section class="compose-layout">
         <article class="card compose-card">
@@ -36,6 +36,11 @@
           </div>
           <button class="primary-button" id="create-link" disabled>Create a private link <svg viewBox="0 0 20 20" fill="none"><path d="M4 10h11m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <p class="privacy-line"><svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.3"/></svg>Audio is stored privately and removed after one listen.</p>
+          <div class="divider drive-divider">OR USE A GOOGLE DRIVE FILE</div>
+          <p class="drive-steps">Upload your audio to Drive, then choose <strong>Share → General access → Anyone with the link → Viewer</strong>.</p>
+          <label class="drive-label" for="drive-url">PASTE THE DRIVE SHARING LINK</label>
+          <div class="drive-row"><input id="drive-url" type="url" inputmode="url" placeholder="https://drive.google.com/file/d/…" autocomplete="url" /><button class="copy-button drive-submit" id="create-drive-link" disabled>Create page</button></div>
+          <p class="drive-note">Paste the copied link here. The Hush page opens Drive’s player; the original file stays there and can be replayed. The expiry setting above applies only to private uploads.</p>
           <section class="link-result" id="link-result" hidden aria-live="polite">
             <div class="result-heading"><span class="success-mark"><svg viewBox="0 0 20 20" fill="none"><path d="m4 10 4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><strong>Your link is ready</strong><small>Anyone with this link can listen once.</small></div></div>
             <div class="link-controls"><input id="share-link" aria-label="Recipient link" readonly /><button class="copy-button" id="copy-link">Copy</button></div>
@@ -44,11 +49,11 @@
         </article>
         <aside class="side-card">
           <div class="side-art"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="sound-mark"><span></span><span></span><span></span><span></span><span></span></div><div class="art-caption">A voice note<br>with an ending.</div></div>
-          <div class="side-copy"><p class="eyebrow">The feeling of a voice</p><h2>Some things are<br>better heard once.</h2><p>Make space for a real moment. Then let it go.</p><div class="side-rule"></div><div class="side-foot"><span class="tiny-lock"><svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.3"/></svg></span><span><strong>One listen. Then it’s gone.</strong><br>That’s the whole idea.</span></div></div>
+          <div class="side-copy"><p class="eyebrow">The feeling of a voice</p><h2>Some things are<br>better heard once.</h2><p>Make space for a real moment and choose where to keep it.</p><div class="side-rule"></div><div class="side-foot"><span class="tiny-lock"><svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.3"/></svg></span><span><strong>Private one-time upload</strong><br>Or keep your audio hosted in Drive.</span></div></div>
         </aside>
       </section>
     </main>
-    <footer class="footer"><span>Made for the moments that matter.</span><span>NO REPLAYS. NO LEFTOVERS.</span></footer>
+    <footer class="footer"><span>Made for the moments that matter.</span><span>ONE-TIME OR DRIVE LINK</span></footer>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </body>

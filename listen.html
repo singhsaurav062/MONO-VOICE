@@ -24,6 +24,7 @@
           <div class="player-controls"><button id="play-pause" class="play-button" aria-label="Play recording"><svg id="play-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.7c0-.7.8-1.1 1.4-.7l6 4.3a.9.9 0 0 1 0 1.4l-6 4.3c-.6.4-1.4 0-1.4-.7V3.7Z"/></svg></button><div class="track"><div class="track-top"><span id="play-state">Your one-time listen</span><span id="audio-time">00:00</span></div><div class="track-rail"><span id="track-progress"></span></div></div></div>
           <p class="player-caption">You can pause and continue this listen. It can’t be started again.</p>
         </div>
+        <div class="player drive-player" id="drive-player" hidden><iframe id="drive-frame" title="Google Drive audio player" allow="autoplay" referrerpolicy="no-referrer"></iframe><a class="drive-fallback" id="drive-open-link" target="_blank" rel="noopener">Open in Google Drive ↗</a><p class="player-caption">This audio is hosted by Google Drive. Hush cannot delete it or prevent another listen.</p></div>
         <p class="recipient-foot" id="recipient-foot"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.5v3M8 5.2h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>After playback, this recording is deleted and can’t be replayed.</p>
       </section>
       <p class="recipient-signoff">Some things are better heard once.</p>

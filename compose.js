@@ -26,6 +26,30 @@
     if (file.size > 4 * 1024 * 1024) { toast('That file is over 4 MB.'); event.target.value = ''; return; }
     setMessage(file, file.name);
   });
+  function getDriveFileId(value) {
+    let url;
+    try { url = new URL(value); } catch { return null; }
+    if (!['drive.google.com', 'docs.google.com'].includes(url.hostname)) return null;
+    const pathMatch = url.pathname.match(/\/(?:file|document|spreadsheets|presentation)\/d\/([^/]+)/i);
+    const id = pathMatch?.[1] || url.searchParams.get('id');
+    return id && /^[A-Za-z0-9_-]{10,}$/.test(id) ? id : null;
+  }
+  $('drive-url').addEventListener('input', () => {
+    $('create-drive-link').disabled = !getDriveFileId($('drive-url').value.trim());
+    $('link-result').hidden = true;
+  });
+  $('create-drive-link').addEventListener('click', () => {
+    const id = getDriveFileId($('drive-url').value.trim());
+    if (!id) { toast('Paste a valid Google Drive file sharing link.'); return; }
+    const url = new URL('listen.html', location.href);
+    url.hash = new URLSearchParams({ drive: id }).toString();
+    $('share-link').value = url.href;
+    $('open-link').href = url.href;
+    $('link-result').querySelector('.result-heading strong').textContent = 'Your Drive listening page is ready';
+    $('link-result').querySelector('.result-heading small').textContent = 'The audio remains in Google Drive and can be replayed there.';
+    $('link-result').hidden = false;
+    $('link-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
   $('record-button').addEventListener('click', async () => {
     if (recorder?.state === 'recording') { recorder.stop(); clearInterval(timer); $('record-button').classList.remove('recording'); $('record-title').textContent = 'Finishing your recording…'; return; }
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) { toast('Recording is unavailable here. Choose an audio file instead.'); return; }
@@ -70,6 +94,8 @@
       url.hash = new URLSearchParams({ id }).toString();
       $('share-link').value = url.href;
       $('open-link').href = url.href;
+      $('link-result').querySelector('.result-heading strong').textContent = 'Your link is ready';
+      $('link-result').querySelector('.result-heading small').textContent = 'Anyone with this link can listen once.';
       $('link-result').hidden = false;
       linkCreated = true;
       $('link-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });

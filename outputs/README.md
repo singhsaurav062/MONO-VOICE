@@ -1,54 +1,50 @@
-# Hush — One-Time Voice Messages
+# Hush — voice message links
 
-Hush lets someone record or upload an audio note, share a private link, and let the recipient play it once. The audio is uploaded to a **private Vercel Blob store**. A Vercel Function streams it to the first recipient who confirms playback and conditionally deletes it before returning the audio, preventing a second successful claim.
+Hush provides two ways to make a listener page:
 
-## Vercel setup
+- **Google Drive link:** upload the audio to Drive, share it as “Anyone with the link” with the Viewer role, then paste the sharing link into Hush. This mode is static and works on GitHub Pages. The listener page embeds Drive’s player.
+- **Private one-time upload:** record or choose an audio file on Hush. This mode uses the `/api/messages` Vercel Function and a private Vercel Blob store. The first recipient to claim it receives the audio; later requests cannot claim it again.
 
-1. In the Vercel project, open **Storage → Create Database → Blob**.
-2. Choose **Private** access and connect the store to this Vercel project.
-3. Vercel adds `BLOB_READ_WRITE_TOKEN` to the project. Redeploy if the site was already deployed.
-4. Keep the Vercel project root set to the repository root so `/api/messages` is deployed as a Function.
+## Google Drive mode (works on GitHub Pages)
 
-Without the private Blob store, uploads return a setup message and no recipient link is created. Never put the Blob token in frontend JavaScript or commit it to GitHub.
+1. Upload the audio file to Google Drive.
+2. Open **Share → General access → Anyone with the link**, set the role to **Viewer**, and copy the sharing link.
+3. Open Hush, paste the Drive link into the Google Drive field, and create the listener page.
+4. Send the Hush listener link to the recipient.
+
+Drive remains the audio host. Hush cannot delete the file or tell when playback ends, and people with the Drive link can replay or download it. Anyone with the Drive link can access it according to the file’s sharing settings. See [Google’s sharing instructions](https://support.google.com/drive/answer/2494822?hl=en).
+
+## Private one-time upload mode (Vercel)
+
+1. Create a **private** Vercel Blob store and connect it to the Vercel project.
+2. Confirm `BLOB_READ_WRITE_TOKEN` is available in the project’s Production environment, then redeploy.
+3. Keep the repository root as the Vercel project root so `/api/messages` is deployed as a Function.
+
+Audio uploads are limited to 4 MB; recordings stop at 2 minutes. Links expire after 1 hour, 24 hours, or 7 days. Do not expose the Blob token in browser code or commit it to GitHub.
+
+## GitHub Pages
+
+GitHub Pages can host the static pages and Google Drive listener links. It does not run `api/messages.js`; the private one-time upload button requires Vercel or another backend with private storage. To publish the Drive mode, configure GitHub Pages to deploy from the repository’s `main` branch and root folder, then paste Drive links into the site.
+
+## Local preview
+
+Open the pages through an HTTP server rather than double-clicking the HTML files:
+
+```bash
+python -m http.server 8000
+```
+
+The Google Drive mode can be previewed on localhost. The private one-time upload API still needs the Vercel Function and Blob configuration.
 
 ## Project structure
 
 ```text
 MONO-VOICE/
 ├── api/messages.js   # Vercel upload and one-time consume endpoint
-├── index.html        # Record/upload page
+├── index.html        # Record, upload, and Drive-link page
 ├── listen.html       # Recipient page
 ├── compose.js        # Recording, upload, and link creation
-├── listen.js         # Warning, playback, and consumed state
+├── listen.js         # Warning, Drive player, and one-time playback
 ├── store.js          # Same-origin API client
-├── styles.css        # Shared design
-├── package.json      # Vercel Blob SDK
-└── .env.example      # Documents the required server variable
+└── styles.css        # Shared design
 ```
-
-## Message flow
-
-1. `POST /api/messages` stores the audio in private Blob storage with a random, expiring link token.
-2. The recipient opens `listen.html` and confirms the one-time listen.
-3. `DELETE /api/messages?id=…` fetches the private blob, then deletes it using its ETag as a conditional one-time claim.
-4. Only the request that successfully claims the blob receives the audio. Later requests get an unavailable response.
-
-Links expire after 1 hour, 24 hours, or 7 days. Audio uploads are limited to 4 MB because Vercel Functions limit request and response payloads to 4.5 MB. The recording control stops at 2 minutes.
-
-## Local preview
-
-Open the site through an HTTP server, not by double-clicking `index.html`:
-
-```bash
-python -m http.server 8000
-```
-
-This only serves the static pages; the `/api/messages` function and Blob storage require Vercel. To test the complete flow locally, use the Vercel CLI and connect the private Blob environment variable.
-
-## Deployment
-
-Vercel should deploy from the repository root. The static pages and `api/messages.js` are both deployed by Vercel. GitHub Pages cannot run the API function or store the audio.
-
-## Privacy limits
-
-The share link is a bearer link: anyone who receives it can claim the note once. A recipient can still make an external recording of playback. The app prevents repeat playback through its endpoint; it cannot prevent copying the sound outside the app.
