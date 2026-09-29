@@ -23,7 +23,7 @@
     const file = event.target.files[0];
     if (!file) return;
     if (!file.type.startsWith('audio/')) { toast('Please choose an audio file.'); event.target.value = ''; return; }
-    if (file.size > 15 * 1024 * 1024) { toast('That file is over 15 MB.'); event.target.value = ''; return; }
+    if (file.size > 4 * 1024 * 1024) { toast('That file is over 4 MB.'); event.target.value = ''; return; }
     setMessage(file, file.name);
   });
   $('record-button').addEventListener('click', async () => {
@@ -62,11 +62,10 @@
     }
     const button = $('create-link');
     button.disabled = true;
-    button.textContent = 'Saving your recording…';
+    button.textContent = 'Uploading privately…';
     try {
-      const id = crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
       const expiryHours = Number($('expiry').value);
-      await HushStore.save(id, selectedBlob, Date.now() + expiryHours * 60 * 60 * 1000);
+      const { id } = await HushStore.save(selectedBlob, expiryHours);
       const url = new URL('listen.html', location.href);
       url.hash = new URLSearchParams({ id }).toString();
       $('share-link').value = url.href;
@@ -74,8 +73,8 @@
       $('link-result').hidden = false;
       linkCreated = true;
       $('link-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    } catch {
-      toast('Could not save this note in the browser. Try another browser or audio file.');
+    } catch (error) {
+      toast(error.message || 'Could not upload the recording. Please try again.');
     } finally {
       button.disabled = linkCreated || !selectedBlob;
       button.innerHTML = linkCreated ? 'Link created' : 'Create a private link <svg viewBox="0 0 20 20" fill="none"><path d="M4 10h11m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';

@@ -20,7 +20,7 @@
       ? 'Open index.html from a localhost or HTTPS address.'
       : 'One listen means one listen. This note can’t be opened again.';
   }
-  if (!noteId) showUnavailable();
+  if (!noteId || location.protocol === 'file:') showUnavailable();
   $('open-recording').addEventListener('click', () => { if (!consumed) modal.hidden = false; });
   $('cancel-listen').addEventListener('click', () => { modal.hidden = true; $('open-recording').focus(); });
   modal.addEventListener('click', (event) => { if (event.target === modal) modal.hidden = true; });
@@ -64,9 +64,19 @@
       audio.addEventListener('error', () => toast('This browser could not play the recording format. The one-time link has been used.'));
       try { await audio.play(); }
       catch { $('play-state').textContent = 'Tap to start your listen'; $('play-pause').setAttribute('aria-label', 'Play recording'); toast('Tap the play button to begin your one listen.'); }
-    } catch {
-      showUnavailable();
-      toast('This recording could not be opened.');
+    } catch (error) {
+      if (error.status === 404 || error.status === 410) {
+        showUnavailable();
+      } else {
+        consumed = false;
+        $('confirm-listen').disabled = false;
+        $('recipient-kicker').textContent = 'The recording could not be opened';
+        $('recipient-title').textContent = 'Let’s try that again.';
+        $('recipient-description').textContent = error.message || 'Check the connection and try again.';
+        $('open-recording').hidden = false;
+        $('open-recording').textContent = 'Try again';
+      }
+      toast(error.message || 'This recording could not be opened.');
     }
   });
   $('play-pause').addEventListener('click', async () => {

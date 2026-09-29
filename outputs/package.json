@@ -1,0 +1,11 @@
+{
+  "name": "hush-one-time-voice-notes",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.3.0"
+  }
+}
